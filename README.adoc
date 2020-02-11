@@ -1,0 +1,22 @@
+= Continuous Integration with Jenkins and Quarkus
+Leon Schlömmer <leon.schloemmer@posteo.at>
+v1.0, 2020-02-11
+
+== The Quarkus Project
+
+
+The application was created with the following command:
+[source]
+----
+mvn io.quarkus:quarkus-maven-plugin:1.2.0.Final:create \
+-DprojectGroupId=at.htl \
+-DprojectArtifactId=jenkins-ausarbeitung \
+-DprojectVersion=1.0 \
+-DclassName="at.htl.boundary.HelloSource"
+----
+
+And necessary extensions are added in the directory of the project with the command:
+[source]
+----
+./mvnw quarkus:add-extension -Dextensions="quarkus-resteasy,quarkus-resteasy-jsonb,quarkus-rest-client,quarkus-smallrye-openapi,quarkus-hibernate-orm,quarkus-jdbc-postgresql,quarkus-smallrye-metrics,quarkus-jsonb,quarkus-jsonp"
+----
