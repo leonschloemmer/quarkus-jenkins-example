@@ -166,3 +166,9 @@ Since in this guide to deploying a Quarkus application using Jenkins, a Dockerfi
 this project, we need to use docker in the pipeline. Jenkins has special features for this.
 
 For the full documentation see link:https://jenkins.io/doc/book/pipeline/docker/[]
+
+== Further Reading
+
+* link:https://medium.com/containerum/configuring-ci-cd-on-kubernetes-with-jenkins-89eab7234270[]
+* link:https://quarkus.io/guides/building-native-image[]
+* link:https://quarkus.io/guides/maven-tooling[]
