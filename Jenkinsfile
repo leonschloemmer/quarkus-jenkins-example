@@ -1,9 +1,10 @@
 pipeline {
-    agent { docker { image 'maven:3.3.3' } }
+    agent { docker { image 'quay.io/quarkus/centos-quarkus-maven:19.3.1-java11' } }
     stages {
         stage('build') {
             steps {
-                sh ''
+                sh 'ls -al'
+                sh 'mvn -f pom.xml -Pnative clean package'
             }
         }
     }
