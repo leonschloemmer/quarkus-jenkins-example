@@ -25,6 +25,7 @@ And necessary extensions are added in the directory of the project with the comm
 == Creating the Jenkins Project
 
 Note, a GitHub Repository must already exist.
+When logged in on the Jenkins at link:https://jenkins.vm81.htl-leonding.ac.at[], do the following:
 
 1. Click the *New Item* menu on the left
 2. Provide a Name for the item
@@ -44,7 +45,7 @@ information about what Jenkins should do. Usually it is split into the parts:
 
 When working with Quarkus however, running the tests (at least the native tests)
 in the Jenkinsfile is a lot more complicated.
-This is because to build an executable with quarkus (and run t, the GraalVM has to be configured. On the school
+This is because to build an executable with quarkus (and run it, the GraalVM has to be configured. On the school
 Jenkins server the GraalVM is not configured, therefore a workaround is needed.
 
 To build the project a multistage Dockerfile is used which starts from a base image that has the
