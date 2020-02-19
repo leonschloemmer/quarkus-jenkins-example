@@ -5,10 +5,10 @@ COPY pom.xml /usr/src/app
 USER root
 RUN chown -R quarkus /usr/src/app
 USER quarkus
-# native tests
-RUN mvn -f /usr/src/app/pom.xml test
 # includes tests
 RUN mvn -f /usr/src/app/pom.xml -Pnative clean package
+# native tests
+RUN mvn -f /usr/src/app/pom.xml verify -Pnative -Dquarkus.test.native-image-wait-time=300
 
 ## Stage 2 : create the docker final image
 FROM registry.access.redhat.com/ubi8/ubi-minimal
