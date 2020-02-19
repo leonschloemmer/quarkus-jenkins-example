@@ -1,10 +1,10 @@
 pipeline {
-    agent { docker { image 'maven:3.6.3' } }
+    agent { docker { image 'ubuntu:bionic' } }
     stages {
         stage('build') {
             steps {
                 sh 'ls -al'
-                sh 'mvn -f pom.xml -Pnative clean package'
+                sh 'docker build -f src/main/docker/Dockerfile.multistage -t jenkins-quickstart/ci-example .'
             }
         }
     }
