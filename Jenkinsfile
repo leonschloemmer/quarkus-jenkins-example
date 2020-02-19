@@ -1,5 +1,5 @@
 pipeline {
-    agent { docker { image 'ubuntu:bionic' } }
+    agent { docker { image 'docker:19' } }
     stages {
         stage('build') {
             steps {
