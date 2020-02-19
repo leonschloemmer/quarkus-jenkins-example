@@ -6,7 +6,7 @@ USER root
 RUN chown -R quarkus /usr/src/app
 USER quarkus
 # native tests
-RUN mvn test
+RUN mvn -f /usr/src/app/pom.xml test
 # includes tests
 RUN mvn -f /usr/src/app/pom.xml -Pnative clean package
 
