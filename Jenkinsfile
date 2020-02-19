@@ -5,7 +5,7 @@ node {
         docker.build('jenkins-quarkus-quickstart/ci-example')
     }
     stage('Deploy') {
-        docker.image('jenkins-quarkus-quickstart/ci-example').withRun('-p 33444:8080 -n ci-example-container') {
+        docker.image('jenkins-quarkus-quickstart/ci-example').withRun('-p 33444:8080') {
             echo "container running wohooo"
         }
     }
