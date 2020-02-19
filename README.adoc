@@ -1,0 +1,167 @@
+= Continuous Deployment with Jenkins and Quarkus
+Leon Schlömmer <leon.schloemmer@posteo.at>
+v1.0, 2020-02-17
+:toc:
+
+== The Quarkus Project
+
+
+The application was created with the following command:
+[source]
+----
+mvn io.quarkus:quarkus-maven-plugin:1.2.0.Final:create \
+-DprojectGroupId=at.htl \
+-DprojectArtifactId=ci-example \
+-DprojectVersion=1.0 \
+-DclassName="at.htl.boundary.HelloSource"
+----
+
+And necessary extensions are added in the directory of the project with the command:
+[source]
+----
+./mvnw quarkus:add-extension -Dextensions="quarkus-resteasy,quarkus-resteasy-jsonb"
+----
+
+== Creating the Jenkins Project
+
+Note, a GitHub Repository must already exist.
+
+1. Click the *New Item* menu on the left
+2. Provide a Name for the item
+3. Select *Multibranch Pipeline*
+4. Go to the next page
+5. Click *Add Source* and enter the HTTPS link to the github repo
+6. Select the GitHub credentials: *htl-leonding-jenkins*
+
+== Course of Action
+
+The project now needs a *Jenkinsfile* in the root directory. Basically, the Jenkinsfile contains
+information about what Jenkins should do. Usually it is split into the parts:
+
+* Build
+* Test
+* Deploy
+
+When working with Quarkus however, running the tests (at least the native tests)
+in the Jenkinsfile is a lot more complicated.
+This is because to build an executable with quarkus (and run t, the GraalVM has to be configured. On the school
+Jenkins server the GraalVM is not configured, therefore a workaround is needed.
+
+To build the project a multistage Dockerfile is used which starts from a base image that has the
+GraalVM configured properly. When building the project with Maven, the tests are automatically run,
+and if the tests fail, the build fails - which is also the reason why the Jenkinsfile does not need
+a _Test Stage_. In this multistage Dockerfile native tests are also being run, which when they fail, also
+cause the build to brake.
+
+== The Dockerfile
+
+[source]
+----
+include::src/main/docker/Dockerfile.multistage[]
+----
+
+This Dockerfile is taken from the Quarkus guide link:https://quarkus.io/guides/building-native-image#creating-a-container-with-a-multi-stage-docker-build[Building a Native Image]
+and has been modified. Firstly, the line:
+[source]
+----
+FROM quay.io/quarkus/centos-quarkus-maven:19.3.1 AS build
+----
+has been changed to
+----
+FROM quay.io/quarkus/centos-quarkus-maven:19.3.1-java11 AS build
+----
+because the image tag does not exist. Check link:http://quay.io/quarkus/centos-quarkus-maven:19.3.1[]
+to see other working tags.
+Furthermore the command for executing the native tests has been added in the first stage of the build.
+[source]
+----
+RUN mvn -f /usr/src/app/pom.xml verify -Pnative -Dquarkus.test.native-image-wait-time=300
+----
+Note, the -f states that the pom file is not in the working directory.
+
+== The Jenkinsfile
+
+== Jenkinsfile for Deploying Quarkus
+
+[source]
+----
+include::Jenkinsfile[]
+----
+
+=== Introduction to the Jenkinsfile Syntax('s)
+
+The Jenkinsfile actually refers to a _Pipeline_. The pipeline contains instructions on what Jenkins should do.
+The Jenkinsfile can either be written with ...
+
+* the declarative syntax for the *Declarative Pipeline*, or
+* the scripted syntax for the *Scripted Pipeline*
+
+From the link:https://jenkins.io/doc/book/pipeline/syntax/[Official Jenkins Documentation]: Declarative Pipeline is a relatively
+recent addition to Jenkins Pipeline which presents a more simplified and opinionated syntax on top of the Pipeline sub-systems.
+...
+
+Scripted Pipeline, like Declarative Pipeline, is built on top of the underlying Pipeline sub-system. Unlike
+Declarative, Scripted Pipeline is effectively a general-purpose DSL (Domain-Specific-Language) built with
+Groovy. Most functionality provided by the Groovy language is made available to users of Scripted Pipeline, which means it can be a very expressive and flexible tool with which one can author continuous delivery pipelines.
+
+==== Declarative Pipeline
+
+With the declarative pipeline, a Jenkinsfile looks like this:
+[source,groovy]
+----
+pipeline {
+    agent ...
+    stages {
+        stage('Build') {
+            steps {
+                sh '...'
+                echo "..."
+                ...
+            }
+        }
+        ...
+    }
+}
+----
+
+Mostly, the agent is any if the stages use their own agents, or it declares some kind of docker image
+to use to execute the commands of the stages. A stage can be named anything.
+
+Here is an example of using a docker agent with maven to build java projects:
+[source,groovy]
+----
+pipeline {
+    agent {
+        docker { image 'maven:3.6.3' }
+    }
+    stages {
+        stage('build') {
+            steps {
+                sh 'mvn --version'
+            }
+        }
+    }
+}
+----
+
+==== Scripted Pipeline
+
+With the scripted pipeline a Jenkinsfile looks like this:
+[source,groovy]
+----
+node {
+    stage('build') {
+        sh '...'
+        docker.image('maven:3.6.3').inside() {
+            sh 'mvn --version'
+        }
+    }
+}
+----
+
+=== Using Docker in the Pipeline
+
+Since in this guide to deploying a Quarkus application using Jenkins, a Dockerfile is used to build
+this project, we need to use docker in the pipeline. Jenkins has special features for this.
+
+For the full documentation see link:https://jenkins.io/doc/book/pipeline/docker/[]
